@@ -38,8 +38,12 @@
           const sellPrices = document.createElement('p');
           sellPrices.textContent = `Sell Prices: ${crop['Sell Price']}`;
 
+          const cropImage = document.createElement('img');
+          cropImage.src = 'crop_images/' + crop['Crop'] + '.png';
+
           // Append elements to the crop container
           cropContainer.appendChild(cropName);
+          cropContainer.appendChild(cropImage);
           cropContainer.appendChild(harvestTime);
           cropContainer.appendChild(sellPrices);
 
