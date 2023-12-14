@@ -1,6 +1,12 @@
 import requests
 import re
 from bs4 import BeautifulSoup
+import json
+
+# method for storing all scraped data into a JSON file for local use
+def save_data_as_json(data):
+    with open('crop_data.json', 'w') as file:
+        json.dump(data, file)
 
 def get_crop_data():
     url = "https://stardewvalleywiki.com/Crops"
@@ -26,7 +32,7 @@ def get_crop_data():
 
                 crops_info.append({"Crop": crop_name, "Harvest Time": harvest_time, "Sell Price": sell_price_cell})
 
-            # Print the harvested data for each crop
+            # Print the harvested data for each crop (used for testing only.  Can be removed)
             for crop in crops_info:
                 item_number = 0
                 print("------------")
@@ -34,13 +40,13 @@ def get_crop_data():
                 print(f"--Sell Prices-- ")
                 for i in crop['Sell Price']:
                     if item_number == 0:
-                        print("Base level: ", i)
+                        print("Regular: ", i)
                     elif item_number == 1:
-                        print("Silver Quality: ", i)
+                        print("Silver: ", i)
                     elif item_number == 2:
-                        print("Gold Quality: ", i)
+                        print("Gold: ", i)
                     elif item_number == 3:
-                        print("Iridium Quality: ", i)
+                        print("Iridium: ", i)
                     item_number += 1
 
         else:
@@ -48,5 +54,6 @@ def get_crop_data():
     except requests.RequestException as e:
         print(f"Request Exception: {e}")
 
+    save_data_as_json(crops_info)
 # Call the function to get crop data
 get_crop_data()
