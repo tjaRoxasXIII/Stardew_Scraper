@@ -23,11 +23,16 @@ def get_crop_data():
             # Find all tables on the page
             tables = soup.find_all("table", {"class": "wikitable roundedborder"})
             crops_info = []
-            crop_seasons = ['Spring', 'Summer', 'Fall']
+            
+            spring_crops = soup.find_all('li', {'class': 'toclevel-1 tocsection-12'})
+            summer_crops = soup.find_all('li', {'class': 'toclevel-1 tocsection-25'})          
+            fall_crops = soup.find_all('li', {'class': 'toclevel-1 tocsection-39'})
 
+            print(spring_crops[0].find_all('a', {'href': '#Blue_Jazz'})[0].text)
 
             # Extract data from the first table (Crops table)
             for index, table in enumerate(tables):
+                break
                 crop_name = table.find_all("a")[1].text
                 harvest_time = table.find(string=re.compile("Total: "))
                 sell_price_cell = table.find_all(string=re.compile('g\n\t'))
