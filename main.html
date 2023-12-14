@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Crop Data</title>
+  <style>
+    /* Add your CSS styling here */
+    /* Example: Style for the crop container */
+    .crop-container {
+      border: 1px solid #ccc;
+      padding: 10px;
+      margin-bottom: 10px;
+    }
+  </style>
+</head>
+<body>
+  <div id="cropData"></div>
+
+  <script>
+    // Fetch the JSON data
+    fetch('crop_data.json')
+      .then(response => response.json())
+      .then(data => {
+        const cropDataContainer = document.getElementById('cropData');
+
+        // Loop through each item in the JSON data and create HTML elements to display
+        data.forEach(crop => {
+          const cropContainer = document.createElement('div');
+          cropContainer.classList.add('crop-container');
+
+          // Create HTML elements for each property of the crop
+          const cropName = document.createElement('h3');
+          cropName.textContent = `Crop: ${crop['Crop']}`;
+
+          const harvestTime = document.createElement('p');
+          harvestTime.textContent = `Harvest Time: ${crop['Harvest Time']}`;
+
+          const sellPrices = document.createElement('p');
+          sellPrices.textContent = `Sell Prices: ${crop['Sell Price']}`;
+
+          // Append elements to the crop container
+          cropContainer.appendChild(cropName);
+          cropContainer.appendChild(harvestTime);
+          cropContainer.appendChild(sellPrices);
+
+          // Append the crop container to the main container in the HTML
+          cropDataContainer.appendChild(cropContainer);
+        });
+      })
+      .catch(error => console.log('Error fetching data:', error));
+  </script>
+</body>
+</html>

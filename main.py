@@ -23,20 +23,30 @@ def get_crop_data():
             # Find all tables on the page
             tables = soup.find_all("table", {"class": "wikitable roundedborder"})
             crops_info = []
+            crop_seasons = ['Spring', 'Summer', 'Fall']
+
 
             # Extract data from the first table (Crops table)
-            for table in tables:
+            for index, table in enumerate(tables):
                 crop_name = table.find_all("a")[1].text
                 harvest_time = table.find(string=re.compile("Total: "))
                 sell_price_cell = table.find_all(string=re.compile('g\n\t'))
-
-                crops_info.append({"Crop": crop_name, "Harvest Time": harvest_time, "Sell Price": sell_price_cell})
+                if index < 12:
+                    crop_season = crop_seasons[0]
+                elif index < 25 :
+                    crop_season = crop_seasons[1]
+                elif index < 35:
+                    crop_season = crop_seasons[2]
+                else:
+                    crop_season = "Specialty Crop"
+                
+                crops_info.append({"Crop": crop_name, "Harvest Time": harvest_time, "Sell Price": sell_price_cell, "Grow Season": crop_season})
 
             # Print the harvested data for each crop (used for testing only.  Can be removed)
             for crop in crops_info:
                 item_number = 0
                 print("------------")
-                print(f"Crop: {crop['Crop']}, Harvest Time: {crop['Harvest Time']}")
+                print(f"Crop: {crop['Crop']}, Harvest Time: {crop['Harvest Time']}, Grow Season: {crop['Grow Season']}")
                 print(f"--Sell Prices-- ")
                 for i in crop['Sell Price']:
                     if item_number == 0:
