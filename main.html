@@ -1,18 +1,37 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <title>Crop Data</title>
-  <style>
-    /* Add your CSS styling here */
-    /* Example: Style for the crop container */
-    .crop-container {
-      border: 1px solid #ccc;
-      padding: 10px;
-      margin-bottom: 10px;
-    }
-  </style>
-</head>
+  <head>
+    <meta charset="UTF-8">
+    <title>Crop Data - Dark Mode</title>
+    <style>
+      /* Dark mode styles */
+      body {
+        background-color: #222;
+        color: #fff;
+        font-family: Arial, sans-serif;
+        padding: 20px;
+        margin: 0;
+      }
+  
+      /* Dark mode styles for the crop container */
+      .crop-container {
+        border: 1px solid #444;
+        padding: 10px;
+        margin-bottom: 10px;
+        background-color: #333;
+      }
+  
+      /* Dark mode styles for the text */
+      h3, p {
+        color: #fff;
+      }
+  
+      /* Dark mode styles for the image */
+      img {
+        filter: brightness(0.8); /* Adjust image brightness if needed */
+      }
+    </style>
+  </head>
 <body>
   <div id="cropData"></div>
 
@@ -35,14 +54,19 @@
           const harvestTime = document.createElement('p');
           harvestTime.textContent = `Harvest Time: ${crop['Harvest Time']}`;
 
+          document.createElement('h2').textContent = 'Sell Prices';
           const sellPrices = document.createElement('p');
           sellPrices.textContent = `Sell Prices: ${crop['Sell Price']}`;
+
+          const cropSeason = document.createElement('p');
+          cropSeason.textContent = `Harvested During: ${crop['Grow Season']}`;
 
           const cropImage = document.createElement('img');
           cropImage.src = 'crop_images/' + crop['Crop'] + '.png';
 
           // Append elements to the crop container
           cropContainer.appendChild(cropName);
+          cropContainer.appendChild(cropSeason);
           cropContainer.appendChild(cropImage);
           cropContainer.appendChild(harvestTime);
           cropContainer.appendChild(sellPrices);
