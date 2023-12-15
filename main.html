@@ -12,70 +12,172 @@
         padding: 20px;
         margin: 0;
       }
-  
+
       /* Dark mode styles for the crop container */
       .crop-container {
         border: 1px solid #444;
         padding: 10px;
         margin-bottom: 10px;
         background-color: #333;
+        overflow: hidden; /* Hide overflow to enable sliding */
       }
-  
+
       /* Dark mode styles for the text */
       h3, p {
         color: #fff;
+        margin: 5px 0;
       }
-  
+
       /* Dark mode styles for the image */
       img {
         filter: brightness(0.8); /* Adjust image brightness if needed */
+        max-width: 100px;
+        height: auto;
+      }
+
+      /* Expandable category styles */
+      .category-header {
+        cursor: pointer;
+        font-weight: bold;
+        margin-bottom: 5px;
+      }
+
+      .category-content {
+        max-height: 0;
+        overflow: hidden;
+        transition: max-height 0.3s ease-out; /* Sliding animation */
+      }
+
+      .category-content.show {
+        max-height: 500px; /* Change to a suitable value */
+        transition: max-height 0.3s ease-in; /* Adjust transition for expansion */
+      }
+
+      .crop-list {
+        overflow-y: auto; /* Enable vertical scroll */
+        max-height: 500px; /* Adjust maximum height */
+        padding: 0 10px; /* Add padding */
+      }
+
+      .crop-item {
+        background-color: #444; /* Slightly darker background */
+        padding: 10px;
+        margin-bottom: 5px;
+      }
+
+      .crop-item:last-child {
+        margin-bottom: 0; /* Remove margin bottom for the last item */
       }
     </style>
   </head>
-<body>
-  <div id="cropData"></div>
+  <body>
+    <input type="text" id="searchInput" placeholder="Search for something...">
+    
+    <div id="cropData"></div>
 
-  <script>
-    // Fetch the JSON data
-    fetch('crop_data.json')
-      .then(response => response.json())
-      .then(data => {
-        const cropDataContainer = document.getElementById('cropData');
+    <script>
+      // Fetch the JSON data
+      fetch('crop_data.json')
+        .then(response => response.json())
+        .then(data => {
+          const cropDataContainer = document.getElementById('cropData');
 
-        // Loop through each item in the JSON data and create HTML elements to display
-        data.forEach(crop => {
-          const cropContainer = document.createElement('div');
-          cropContainer.classList.add('crop-container');
+          // Group crops by category
+          const groupedCrops = {};
+          data.forEach(crop => {
+            const category = crop['Crop Category'];
+            if (!groupedCrops[category]) {
+              groupedCrops[category] = [];
+            }
+            groupedCrops[category].push(crop);
+          });
 
-          // Create HTML elements for each property of the crop
-          const cropName = document.createElement('h3');
-          cropName.textContent = `Crop: ${crop['Crop']}`;
+          // Loop through each category and create expandable sections
+          Object.entries(groupedCrops).forEach(([category, crops]) => {
+            const categoryContainer = document.createElement('div');
+            categoryContainer.classList.add('crop-container');
 
-          const harvestTime = document.createElement('p');
-          harvestTime.textContent = `Harvest Time: ${crop['Harvest Time']}`;
+            const categoryHeader = document.createElement('div');
+            categoryHeader.classList.add('category-header');
+            categoryHeader.textContent = `Category: Crops`;
+            categoryHeader.addEventListener('click', () => {
+              categoryContent.classList.toggle('show');
+            });
 
-          document.createElement('h2').textContent = 'Sell Prices';
-          const sellPrices = document.createElement('p');
-          sellPrices.textContent = `Sell Prices: ${crop['Sell Price']}`;
+            const categoryContent = document.createElement('div');
+            categoryContent.classList.add('category-content');
 
-          const cropSeason = document.createElement('p');
-          cropSeason.textContent = `Harvested During: ${crop['Grow Season']}`;
+            const cropList = document.createElement('div');
+            cropList.classList.add('crop-list');
 
-          const cropImage = document.createElement('img');
-          cropImage.src = 'crop_images/' + crop['Crop'] + '.png';
+            // Create elements for crops within each category
+            crops.forEach(crop => {
+              const cropContainer = document.createElement('div');
+              const pricingData = crop['Sell Price'][0];
+              cropContainer.classList.add('crop-item');
+              cropContainer.innerHTML = `
+                <h3>Crop: ${crop['Crop']}</h3>
+                <p>Harvest Time: ${crop['Harvest Time']}</p>
+                <p>Harvested During: ${crop['Grow Season']}</p>
+                <img src="crop_images/${crop['Crop']}.png" alt="${crop['Crop']}" />
+                <p>Sell Prices:</p>
+                <ul class="sell-prices">
+                  ${crop['Sell Price'].map((price, index) => {
+                  let priceType;
+                  switch (index) {
+                    case 0:
+                      priceType = 'Base';
+                      break;
+                    case 1:
+                      priceType = 'Silver';
+                      break;
+                    case 2:
+                      priceType = 'Gold';
+                      break;
+                    case 3:
+                      priceType = 'Iridium';
+                      break;
+                    default:
+                      priceType = 'Base';
+                  }
+                  return `<li>${priceType}: ${price}</li>`;
+                }).join('')}
+                </ul>
+              `;
+              cropList.appendChild(cropContainer);
+            });
 
-          // Append elements to the crop container
-          cropContainer.appendChild(cropName);
-          cropContainer.appendChild(cropSeason);
-          cropContainer.appendChild(cropImage);
-          cropContainer.appendChild(harvestTime);
-          cropContainer.appendChild(sellPrices);
+            categoryContent.appendChild(cropList);
+            categoryContainer.appendChild(categoryHeader);
+            categoryContainer.appendChild(categoryContent);
+            cropDataContainer.appendChild(categoryContainer);
 
-          // Append the crop container to the main container in the HTML
-          cropDataContainer.appendChild(cropContainer);
+            // Add transitionend event listener to reset margin after animation
+            categoryContent.addEventListener('transitionend', () => {
+              const cropItems = cropList.querySelectorAll('.crop-item');
+              cropItems.forEach(item => {
+                item.classList.toggle('crop-item-hide');
+              });
+            });
+          });
+        })
+        .catch(error => console.log('Error fetching data:', error));
+
+        function filterCrops() {
+        const input = document.getElementById('searchInput').value.toLowerCase();
+        const cropItems = document.querySelectorAll('.crop-item');
+        cropItems.forEach(item => {
+          const cropName = item.querySelector('h3').textContent.toLowerCase();
+          if (cropName.includes(input)) {
+            item.style.display = 'block';
+          } else {
+            item.style.display = 'none';
+          }
         });
-      })
-      .catch(error => console.log('Error fetching data:', error));
-  </script>
-</body>
+      }
+
+      // Event listener for the search input
+      document.getElementById('searchInput').addEventListener('input', filterCrops);
+    </script>
+  </body>
 </html>
