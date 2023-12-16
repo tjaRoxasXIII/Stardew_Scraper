@@ -1,2 +1,4 @@
-/crop_data.json
-/crop_images/
+scrapers/crop_data.json
+scrapers/crop_images/
+scrapers/villager_data.json
+scrapers/villager_images/
