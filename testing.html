@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8">
+    <title>Data Viewer - Crops and Villagers</title>
+    <style>
+      /* Dark mode styles */
+      body {
+        background-color: #222;
+        color: #fff;
+        font-family: Arial, sans-serif;
+        padding: 20px;
+        margin: 0;
+      }
+
+      /* Dark mode styles for the container */
+      .data-container {
+        border: 1px solid #444;
+        padding: 10px;
+        margin-bottom: 10px;
+        background-color: #333;
+        overflow: hidden; /* Hide overflow to enable sliding */
+      }
+
+      /* Dark mode styles for the text */
+      h3, p {
+        color: #fff;
+        margin: 5px 0;
+      }
+
+      /* Dark mode styles for the image */
+      img {
+        filter: brightness(0.8); /* Adjust image brightness if needed */
+        max-width: 100px;
+        height: auto;
+      }
+
+      /* Expandable category styles */
+      .category-header {
+        cursor: pointer;
+        font-weight: bold;
+        margin-bottom: 5px;
+      }
+
+      .category-content {
+        max-height: 0;
+        overflow: hidden;
+        transition: max-height 0.3s ease-out; /* Sliding animation */
+      }
+
+      .category-content.show {
+        max-height: 500px; /* Change to a suitable value */
+        transition: max-height 0.3s ease-in; /* Adjust transition for expansion */
+      }
+
+      .item-list {
+        overflow-y: auto; /* Enable vertical scroll */
+        max-height: 500px; /* Adjust maximum height */
+        padding: 0 10px; /* Add padding */
+      }
+
+      .data-item {
+        background-color: #444; /* Slightly darker background */
+        padding: 10px;
+        margin-bottom: 5px;
+      }
+
+      .data-item:last-child {
+        margin-bottom: 0; /* Remove margin bottom for the last item */
+      }
+    </style>
+  </head>
+  <body>
+    <input type="text" id="searchInput" placeholder="Search for something...">
+
+    <div id="cropData" class="data-container"></div>
+    <div id="villagerData" class="data-container"></div>
+
+    <script>
+      function fetchDataAndDisplay(url, containerId, itemName, itemImageKey) {
+        fetch(url)
+          .then(response => response.json())
+          .then(data => {
+            const dataContainer = document.getElementById(containerId);
+
+            const groupedItems = {};
+            data.forEach(item => {
+              const category = item['Category'];
+              if (!groupedItems[category]) {
+                groupedItems[category] = [];
+              }
+              groupedItems[category].push(item);
+            });
+
+            Object.entries(groupedItems).forEach(([category, items]) => {
+              const categoryContainer = document.createElement('div');
+              categoryContainer.classList.add('data-container');
+
+              const categoryHeader = document.createElement('div');
+              categoryHeader.classList.add('category-header');
+              categoryHeader.textContent = `Category: ${itemName}`;
+              categoryHeader.addEventListener('click', () => {
+                categoryContent.classList.toggle('show');
+              });
+
+              const categoryContent = document.createElement('div');
+              categoryContent.classList.add('category-content');
+
+              const itemList = document.createElement('div');
+              itemList.classList.add('item-list');
+
+              items.forEach(dataItem => {
+                const itemContainer = document.createElement('div');
+                itemContainer.classList.add('data-item');
+                for (const key in dataItem) {
+                    if (key === 'Image URL') {
+                    const image = document.createElement('img');
+                    image.src = dataItem[key]; // Set the src attribute with the value from 'Image URL'
+                    image.alt = 'Image'; // Add an alt attribute (modify as needed)
+                    itemContainer.appendChild(image);
+                    } else if (key === 'Sell Price') {
+                        const sellPrices = dataItem[key].map(price => price.trim()); // Split prices by comma and trim spaces
+                        const priceList = document.createElement('ul'); // Create unordered list
+
+                        sellPrices.map(price => {
+                            const listItem = document.createElement('li'); // Create list item for each price
+                            listItem.textContent = price; // Set text content to the price
+                            priceList.appendChild(listItem); // Append list item to the unordered list
+                        });
+
+                    itemContainer.appendChild(priceList); // Append the list to the container
+                    } else {
+                    const paragraph = document.createElement('p');
+                    paragraph.textContent = `${key}: ${dataItem[key]}`;
+                    itemContainer.appendChild(paragraph);
+                    }
+                }
+                itemList.appendChild(itemContainer);
+              });
+
+              categoryContent.appendChild(itemList);
+              categoryContainer.appendChild(categoryHeader);
+              categoryContainer.appendChild(categoryContent);
+              dataContainer.appendChild(categoryContainer);
+
+              categoryContent.addEventListener('transitionend', () => {
+                const items = itemList.querySelectorAll('.data-item');
+                items.forEach(item => {
+                  item.classList.toggle('data-item-hide');
+                });
+              });
+            });
+          })
+          .catch(error => console.log(`Error fetching ${itemName} data:`, error));
+      }
+
+      fetchDataAndDisplay('scrapers/crop_data.json', 'cropData', 'Crop', 'CropImage', 'Sell Price', 'Harvest Time', 'Grow Season');
+      fetchDataAndDisplay('scrapers/villager_data.json', 'villagerData', 'Name', 'Image');
+      
+      function filterItems() {
+        const input = document.getElementById('searchInput').value.toLowerCase();
+        const items = document.querySelectorAll('.data-item h3');
+        items.forEach(item => {
+          const itemName = item.textContent.toLowerCase();
+          if (itemName.includes(input)) {
+            item.parentElement.style.display = 'block';
+          } else {
+            item.parentElement.style.display = 'none';
+          }
+        });
+      }
+    
+      document.getElementById('searchInput').addEventListener('input', filterItems);
+    </script>
+
+  </body>
+</html>
